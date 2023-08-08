@@ -457,8 +457,11 @@ class RCDSGenerator(Generator):
         else:
             x0 = options.x0
 
+        # RCDS assume a normalized problem
+        _x0 = (x0 - bound_low) / (bound_up - bound_low)
+
         self.rcds = RCDS(
-            x0=x0,
+            x0=_x0,
             init_mat=options.init_mat,
             noise=options.noise,
             step=options.step,
@@ -482,11 +485,16 @@ class RCDSGenerator(Generator):
         x_next = np.array(next(self.generator))  # note that x_next is a np.matrix!
 
         # Verify the candidate here
-        while np.any(x_next > self.ub) or np.any(x_next < self.lb):
+        while np.any(x_next > 1) or np.any(x_next < 0):
             self.rcds.update_obj(
                 np.nan
             )  # notify RCDS that the search reached the bound
             x_next = np.array(next(self.generator))  # request next candidate
+
+        # RCDS generator yields normalized x so denormalize it here
+        ub_col = self.ub.reshape(-1, 1)
+        lb_col = self.lb.reshape(-1, 1)
+        x_next = (ub_col - lb_col) * x_next + lb_col
 
         # Return the next value
         try:
