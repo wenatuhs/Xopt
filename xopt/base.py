@@ -9,7 +9,7 @@ from pandas import DataFrame
 from pydantic import (
     Field,
     field_validator,
-    FieldValidationInfo,
+    ValidationInfo,
     model_validator,
     SerializeAsAny,
 )
@@ -94,7 +94,7 @@ class Xopt(XoptBaseModel):
         return value
 
     @field_validator("data", mode="before")
-    def validate_data(cls, v, info: FieldValidationInfo):
+    def validate_data(cls, v, info: ValidationInfo):
         if isinstance(v, dict):
             try:
                 v = pd.DataFrame(v)
