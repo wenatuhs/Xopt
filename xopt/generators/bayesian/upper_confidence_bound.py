@@ -20,13 +20,16 @@ class UpperConfidenceBoundGenerator(BayesianGenerator):
     __doc__ = """Implements Bayesian Optimization using the Upper Confidence Bound
     acquisition function"""
 
-    @field_validator("vocs", mode="before")
+    @field_validator("vocs", mode='before')
     def validate_vocs_without_constraints(cls, v):
-        if v.constraints:
+        try:
+            _ = v['constraints']
             warnings.warn(
                 f"Using {cls.__name__} with constraints may lead to numerical issues if the base acquisition "
                 f"function has negative values."
             )
+        except KeyError:
+            pass
         return v
 
     def _get_acquisition(self, model):
